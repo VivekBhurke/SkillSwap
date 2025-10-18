@@ -8,6 +8,7 @@ import { CreditsWallet } from "./components/CreditsWallet";
 import { Profile } from "./components/Profile";
 import { Messages } from "./components/Messages";
 import { Notifications } from "./components/Notifications";
+import { Settings } from "./components/Settings";
 import { Toaster } from "./components/ui/sonner";
 import { motion, AnimatePresence } from "motion/react";
 
@@ -30,6 +31,8 @@ function AppContent() {
         return <Messages />;
       case "notifications":
         return <Notifications />;
+      case "settings":
+        return <Settings />;
       default:
         return <LandingPage />;
     }

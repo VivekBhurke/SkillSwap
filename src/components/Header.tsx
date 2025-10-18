@@ -10,7 +10,8 @@ import {
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from './ui/dropdown-menu';
-import { Bell, Menu, Search, Sparkles, User, LogOut, Settings, MessageCircle } from 'lucide-react';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from './ui/sheet';
+import { Bell, Menu, Search, Sparkles, User, LogOut, Settings, MessageCircle, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 export function Header() {
@@ -25,6 +26,7 @@ export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [notifications, setNotifications] = useState(3);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -166,11 +168,20 @@ export function Header() {
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
               >
-                <Button variant="ghost" size="sm" className="relative p-2">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className={`relative p-2 ${
+                    currentPage === 'notifications' 
+                      ? 'bg-eco-green-100 text-eco-green-700' 
+                      : ''
+                  }`}
+                  onClick={() => setCurrentPage('notifications')}
+                >
                   <Bell className="w-5 h-5" />
                   {notifications > 0 && (
                     <motion.span
-                      className="absolute -top-1 -right-1 w-5 h-5 bg-eco-green-500 text-white text-xs rounded-full flex items-center justify-center"
+                      className="absolute -top-1 -right-1 w-5 h-5 bg-eco-green-500 text-white text-xs rounded-full flex items-center justify-center shadow-lg"
                       animate={{ scale: [1, 1.2, 1] }}
                       transition={{ duration: 2, repeat: Infinity }}
                     >
@@ -234,6 +245,17 @@ export function Header() {
                   </DropdownMenuItem>
                   
                   <DropdownMenuItem 
+                    onClick={() => setCurrentPage('notifications')}
+                    className="cursor-pointer"
+                  >
+                    <Bell className="mr-2 h-4 w-4" />
+                    Notifications
+                    {notifications > 0 && (
+                      <Badge className="ml-auto text-xs bg-eco-green-500 text-white">{notifications}</Badge>
+                    )}
+                  </DropdownMenuItem>
+                  
+                  <DropdownMenuItem 
                     onClick={() => setCurrentPage('messages')}
                     className="cursor-pointer"
                   >
@@ -242,7 +264,10 @@ export function Header() {
                     <Badge variant="secondary" className="ml-auto text-xs">2</Badge>
                   </DropdownMenuItem>
                   
-                  <DropdownMenuItem className="cursor-pointer">
+                  <DropdownMenuItem 
+                    onClick={() => setCurrentPage('settings')}
+                    className="cursor-pointer"
+                  >
                     <Settings className="mr-2 h-4 w-4" />
                     Settings
                   </DropdownMenuItem>
@@ -274,11 +299,156 @@ export function Header() {
             )}
 
             {/* Mobile Menu */}
-            <div className="lg:hidden">
-              <Button variant="ghost" size="sm" className="p-2">
-                <Menu className="w-5 h-5" />
-              </Button>
-            </div>
+            <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+              <SheetTrigger asChild className="lg:hidden">
+                <Button variant="ghost" size="sm" className="p-2">
+                  <Menu className="w-5 h-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+                <SheetHeader className="mb-6">
+                  <SheetTitle className="flex items-center gap-2">
+                    <div className="w-8 h-8 gradient-eco rounded-lg flex items-center justify-center">
+                      <Sparkles className="w-4 h-4 text-white" />
+                    </div>
+                    <span className="bg-gradient-to-r from-eco-green-600 to-eco-teal-600 bg-clip-text text-transparent">
+                      SkillSwap
+                    </span>
+                  </SheetTitle>
+                </SheetHeader>
+
+                <div className="flex flex-col h-[calc(100%-80px)]">
+                  {/* User Profile Section */}
+                  {currentUser && userProfile && (
+                    <motion.div 
+                      className="mb-6 p-4 bg-gradient-to-br from-eco-green-50 to-eco-teal-50 rounded-xl border border-eco-green-200"
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                    >
+                      <div className="flex items-center gap-3 mb-3">
+                        <Avatar className="h-12 w-12 border-2 border-eco-green-200">
+                          <AvatarFallback className="bg-gradient-to-br from-eco-green-500 to-eco-teal-500 text-white">
+                            {currentUser.email?.[0]?.toUpperCase() || 'U'}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium truncate">{userProfile?.name || 'User'}</p>
+                          <p className="text-sm text-muted-foreground truncate">{currentUser.email}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge className="bg-eco-green-500 text-white">
+                          ⭐ {userProfile?.credits || 0} credits
+                        </Badge>
+                        <Badge variant="secondary">
+                          ⚡ {userProfile?.totalSessions || 0} sessions
+                        </Badge>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* Navigation Items */}
+                  <nav className="flex-1 space-y-1 mb-6">
+                    {navItems.map((item, index) => (
+                      <motion.button
+                        key={item.id}
+                        onClick={() => {
+                          setCurrentPage(item.id);
+                          setIsMobileMenuOpen(false);
+                        }}
+                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ease-out ${
+                          isActive(item.id)
+                            ? 'bg-eco-green-100 text-eco-green-700 shadow-sm'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-eco-neutral-100'
+                        }`}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.05 * index }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        <span className="text-xl">{item.icon}</span>
+                        <span className="font-medium">{item.label}</span>
+                        {item.id === 'messages' && (
+                          <Badge variant="secondary" className="ml-auto">2</Badge>
+                        )}
+                      </motion.button>
+                    ))}
+
+                    {currentUser && (
+                      <>
+                        <motion.button
+                          onClick={() => {
+                            setCurrentPage('notifications');
+                            setIsMobileMenuOpen(false);
+                          }}
+                          className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ease-out ${
+                            currentPage === 'notifications'
+                              ? 'bg-eco-green-100 text-eco-green-700 shadow-sm'
+                              : 'text-muted-foreground hover:text-foreground hover:bg-eco-neutral-100'
+                          }`}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.05 * navItems.length }}
+                          whileTap={{ scale: 0.98 }}
+                        >
+                          <Bell className="w-5 h-5" />
+                          <span className="font-medium">Notifications</span>
+                          {notifications > 0 && (
+                            <Badge className="ml-auto bg-eco-green-500 text-white">{notifications}</Badge>
+                          )}
+                        </motion.button>
+
+                        <motion.button
+                          onClick={() => {
+                            setCurrentPage('settings');
+                            setIsMobileMenuOpen(false);
+                          }}
+                          className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ease-out ${
+                            currentPage === 'settings'
+                              ? 'bg-eco-green-100 text-eco-green-700 shadow-sm'
+                              : 'text-muted-foreground hover:text-foreground hover:bg-eco-neutral-100'
+                          }`}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.05 * (navItems.length + 1) }}
+                          whileTap={{ scale: 0.98 }}
+                        >
+                          <Settings className="w-5 h-5" />
+                          <span className="font-medium">Settings</span>
+                        </motion.button>
+                      </>
+                    )}
+                  </nav>
+
+                  {/* Bottom Actions */}
+                  <div className="border-t border-eco-green-200 pt-4">
+                    {currentUser ? (
+                      <Button
+                        onClick={() => {
+                          signOut();
+                          setIsMobileMenuOpen(false);
+                        }}
+                        variant="outline"
+                        className="w-full justify-start gap-3 text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/20"
+                      >
+                        <LogOut className="w-5 h-5" />
+                        <span className="font-medium">Sign Out</span>
+                      </Button>
+                    ) : (
+                      <Button
+                        onClick={() => {
+                          setCurrentPage('home');
+                          setIsMobileMenuOpen(false);
+                        }}
+                        className="w-full gradient-eco text-white"
+                      >
+                        Sign In
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       </div>

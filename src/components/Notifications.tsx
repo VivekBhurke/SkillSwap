@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useApp } from '../context/AppContext';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
@@ -115,6 +116,7 @@ const notificationColors = {
 };
 
 export function Notifications() {
+  const { setCurrentPage } = useApp();
   const [allNotifications, setAllNotifications] = useState(notifications);
   const [filter, setFilter] = useState('all');
 
@@ -191,7 +193,12 @@ export function Notifications() {
                   Mark all as read
                 </Button>
               )}
-              <Button variant="ghost" size="sm">
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => setCurrentPage('settings')}
+                title="Notification Settings"
+              >
                 <Settings className="w-4 h-4" />
               </Button>
             </div>
